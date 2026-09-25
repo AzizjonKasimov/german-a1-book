@@ -1,10 +1,30 @@
-const http=require('http'),fs=require('fs'),path=require('path');
-const root=__dirname;
-const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css'};
-http.createServer((req,res)=>{
-  let p=decodeURIComponent(req.url.split('?')[0].split('#')[0]); if(p==='/') p='/index.html';
-  const f=path.join(root,p);
-  fs.readFile(f,(e,d)=>{ if(e){res.writeHead(404);res.end('not found');return;}
-    let body=d; if(f.endsWith('index.html')) body=Buffer.concat([Buffer.from('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style></head><body>'),d,Buffer.from('</body></html>')]);
-    res.writeHead(200,{'Content-Type':types[path.extname(f)]||'application/octet-stream'}); res.end(body); });
-}).listen(8765,()=>console.log('serving on 8765'));
+/* Local preview: node serve.js, then open http://localhost:8765
+   Serves src/page.html wrapped as a full document, and everything else as static files. */
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
+const { wrap } = require('./build.js');
+const ROOT = __dirname;
+const PORT = 8765;
+const TYPES = {
+  '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
+  '.json': 'application/json; charset=utf-8', '.css': 'text/css', '.mp3': 'audio/mpeg'
+};
+
+http.createServer((req, res) => {
+  let p = decodeURIComponent(req.url.split('?')[0]);
+  if (p === '/' || p === '/index.html') {
+    try {
+      const body = wrap(fs.readFileSync(path.join(ROOT, 'src', 'page.html'), 'utf8'));
+      res.writeHead(200, { 'Content-Type': TYPES['.html'], 'Cache-Control': 'no-store' });
+      return res.end(body);
+    } catch (e) { res.writeHead(500); return res.end(String(e)); }
+  }
+  const f = path.normalize(path.join(ROOT, p));
+  if (!f.startsWith(ROOT)) { res.writeHead(403); return res.end(); }
+  fs.readFile(f, (e, d) => {
+    if (e) { res.writeHead(404); return res.end('not found'); }
+    res.writeHead(200, { 'Content-Type': TYPES[path.extname(f).toLowerCase()] || 'application/octet-stream' });
+    res.end(d);
+  });
+}).listen(PORT, () => console.log('Deutsch in 30 Tagen: http://localhost:' + PORT));
