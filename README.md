@@ -2,7 +2,8 @@
 
 A self-study German A1 course as a single interactive web page: 30 chapters, one per day, each planned to fit 30 minutes, with recorded German audio for every dialogue line and every word.
 
-- **Live page:** https://claude.ai/artifact/JApiNe9jVhy4qqwuYo5XSz (private link, needs a Claude sign-in)
+- **Public site:** https://azizjonkasimov.github.io/german-a1-book/ (GitHub Pages, built from `index.html` on `main`)
+- **Claude page:** https://claude.ai/artifact/JApiNe9jVhy4qqwuYo5XSz (private link, needs a Claude sign-in)
 - **Run locally:** `node serve.js`, then open http://localhost:8765
 
 ## What is in a chapter
